@@ -3,11 +3,17 @@
 class Robot {
     private int $x;
     private int $y;
-    private string $direction;
+    private int $angle;
     private array $path;
 
     private static array $directions = ['north', 'south', 'east', 'west'];
 
+    private static array $directionDegrees = array(
+        'south' => 180,
+        'north' => 0,
+        'east' => 90,
+        'west' => 270
+    );
 
     public function __construct(int $x, int $y, string $direction, string $path)
     {
@@ -20,62 +26,38 @@ class Robot {
 
         $this->x = $x;
         $this->y = $y;
-        $this->direction = $direction;        
         $this->path = str_split($path);
+        $this->angle = self::$directionDegrees[$direction];
     }
 
     private function turnRight(): void
     {
-        switch($this->direction){
-            case 'south':
-                $this->direction = 'west';
-                break;
-            case 'west':
-                $this->direction = 'north';
-                break;
-            case 'north':
-                $this->direction = 'east';
-                break;
-            case 'east':
-                $this->direction = 'south';
-                break;
+        $angle = 90;
+        if($this->angle + $angle >= 360){
+            $this->angle = ($this->angle + $angle) - 360 ;
+            return;
         }
+        $this->angle += $angle;
     }
 
     private function turnLeft(): void
     {
-        switch($this->direction){
-            case 'south':
-                $this->direction = 'east';
-                break;
-            case 'east':
-                $this->direction = 'north';
-                break;
-            case 'north':
-                $this->direction = 'west';
-                break;
-            case 'west':
-                $this->direction = 'south';
-                break;
+        $angle = 90;
+        if($this->angle - $angle < 0){
+            $this->angle = 360 - (($this->angle - $angle) * -1);
+            return;
         }
+        $this->angle -= $angle;
     }
 
     private function move(int $steps): void
     {
-        switch($this->direction){
-            case 'south':
-                $this->y -= $steps;
-                break;
-            case 'west':
-                $this->x -= $steps;
-                break;
-            case 'north':
-                $this->y += $steps;
-                break;
-            case 'east':
-                $this->x += $steps;
-                break;
-        }
+        $radians = deg2rad($this->angle);
+        $vertical = cos($radians) * $steps;
+        $horizontal = sin($radians) * $steps;
+
+        $this->x += round($horizontal);
+        $this->y += round($vertical);
     }
 
     private function getSteps(int $index): array 
@@ -119,7 +101,7 @@ class Robot {
                 // optionally we can raise an exception
             }
         }
-        echo($this->x . ' ' . $this->y . ' ' .  ucfirst($this->direction));
+        echo($this->x . ' ' . $this->y . ' ' .  ucfirst(array_search($this->angle, self::$directionDegrees)));
     }
 }
 
